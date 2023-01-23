@@ -12,8 +12,8 @@ b_in = np.array([170, 150, 180])
 cN_in = np.array([300, 500])
 
 # Precision parameters
-epsilon = 0.0001
-nu = 0.0001
+epsilon = 0.1
+nu = 0.1
 
 # Dimensions
 m: int = b_in.shape[0]  # number of constraints (number of basic variables)
@@ -86,46 +86,18 @@ while RC.any() > 0:
     print("Iteration:", iteration)
     iteration = iteration+1
 
-    # Column sparsity
-    cspars = []
-    for j in range(n + 1, n + m + 1):
-        l=0
-        for i in range(1, m + 1):
-            if A_T[i, j] == 0:
-                l = l + 1
-            cspars.append(l)
 
-    d_c = np.amax(cspars)
-
-    print("Column sparsity:", d_c)
-
-    # Row sparsity
-    rspars = []
-    for i in range( 1, m + 1):
-        v = 0
-        for j in range(n+1, n+ m + 1):
-            if A_T[i, j] == 0:
-                v = v + 1
-            rspars.append(l)
-
-    d_r = np.amax(rspars)
-
-    print("Row sparsity:", d_r)
-
-    d = np.maximum(d_r, d_c)
-
-    print("Sparsity:", d)
 
 
     # Determine eta
 
-    for i in range(1, m + 1):
+    for i in range(1, m +1):
         b[i - 1] = A_T[i, 0]  #  vector b
 
-        for j in range(1, n + 1):
+        for j in range(1, n +1 ):
             A[i-1, j-1] = A_T[i, j]  #  matrix A
 
-        for k in range(n + 1, m + n + 1):
+        for k in range(n + 1, m + n +1):
             A_B[i-1, k-n-m-1] = A_T[i, k]   #  basis matrix
 
 
@@ -144,6 +116,36 @@ while RC.any() > 0:
     kappa = LA.cond(A_B)
 
     print("Condition number:", kappa)
+
+    # Column sparsity
+    cspars = []
+    for j in range(0, n):
+        l = 0
+        for i in range(0, m):
+            if A[i, j] == 0:
+                l = l + 1
+        cspars.append(l)
+
+    d_c = np.amax(cspars)
+
+    print("Column sparsity:", d_c)
+
+    # Row sparsity
+    rspars = []
+    for i in range(0, m):
+        v = 0
+        for j in range(0, n):
+            if A[i, j] == 0:
+                v = v + 1
+        rspars.append(v)
+
+    d_r = np.amax(rspars)
+
+    print("Row sparsity:", d_r)
+
+    d = np.maximum(d_r, d_c)
+
+    print("Sparsity:", d)
 
     # Contribution to complexity in Nannicini
 
@@ -245,11 +247,12 @@ Total_gates_IsUnbd = sum(Gate_IsUnbd)
 
 Total_No_It_FC = iteration*math.sqrt(n)
 
-Total_gates_Quantum = Total_gates_FR + Total_gates_FC + Total_gates_IsOpt + Total_gates_IsUnbd
+Total_gates_Quantum = Total_gates_FR + Total_gates_FC # Total_gates_IsOpt + Total_gates_IsUnbd
 
 # Gate count classical simplex
 
 Total_gates_Classic = sum(Gates_Classic)
 
 print("Objective value z=", z, "with solution vector x=", x)
-print("O_FR:", Total_gates_FR,"\n", "O_FC:", Total_gates_FC, "\n",  "O_IsUnbd:", Total_gates_IsUnbd, "\n", "O_IsOpt:", Total_gates_IsOpt, "\n",  "Total no of gates \n Nannicni:", Total_gates_Quantum, "\n", "Classical Simplex:", Total_gates_Classic)
+print("O_FR:", Total_gates_FR,"\n", "O_FC:", Total_gates_FC, "\n", # "O_IsUnbd:", Total_gates_IsUnbd, "\n", "O_IsOpt:", Total_gates_IsOpt, "\n",
+ "Total no of gates \n Nannicni:", Total_gates_Quantum, "\n", "Classical Simplex:", Total_gates_Classic)
